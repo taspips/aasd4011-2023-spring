@@ -1,4 +1,4 @@
-## Setup
+## Setup (x86 Systems)
 To run the code on a local or remote machine, you can follow the recommendation below.
 We use `pip` and `venv`, which are the default Python environment management system and are effective for that purpose.
 ### Prerequisite
@@ -36,3 +36,19 @@ To make sure that the `PyTorch` and `Tensorflow` environments, and the `vscode` 
 * The reason we create two virtual environments, and not simply one environment containing both `PyTorch` and `Tensorflow`, is due to a conflict with running `Tensorboard` on `PyTorch` while `Tensorflow` is installed  ([Github Issue](https://github.com/pytorch/pytorch/issues/30966#issuecomment-576261087), with a potential [patch](https://github.com/pytorch/pytorch/issues/30966#issuecomment-582747929) that we're not following).
 * Your Python executable might be `python3` rather than `python` (e.g. as in Ubuntu 22.04 due to a [historical root-cause](https://itsfoss.com/python-not-found-ubuntu/#:~:text=It's%20because%20the%20Python%20language,available%20as%20python%20package%2Fexecutable.)). In that case simply replace `python` with `python3` above, and in the manual method below, if you decide to run it.
 * In case you want to have multiple Python versions on the same machine (e.g. because you have Python 3.11 installed and the setup below fails for that reason), then you can do so by installing each version to a different folder. Python installation are completely independent of each other. Then, in the steps described below, call the Python version based on its path. `which python` (Linux&Mac) and `where python` (windows) commands tells you which python path is being called by `python`. See [stackoverflow](https://stackoverflow.com/questions/2547554/multiple-python-versions-on-the-same-machine) for more. Importantly, once you install the virtual environments as described above, and using the right python version, a copy of that version is created in the virtual environment. So that when you activate the environment as usual, the right python version will be used. A second option is to use `pyenv`. `pyenv` is a good way to manage several python versions running on the same machine, and allows you to pick a global version or set it locally for one project ([realpython](https://realpython.com/intro-to-pyenv/)).
+
+---
+
+## Setup (ARM Systems)
+This setup is meant for Apple Silicon devices i.e. M1/M2 Macbooks etc.
+
+### Prerequisite
+Same as x86. Ensure python, pip, git and VSCode are installed.
+
+### Setup Steps
+1. **Semi-automatically using the `setup_apple_silicon.py` script**:    From the repository root folder, run `python ./setup/setup_apple_silicon.py`. 
+2. **Manually**:
+Follow the instructions here- https://github.com/AASD4011-2023-spring/aasd4011-2023-spring/issues/5#issuecomment-1544981344
+
+### Refer
+https://developer.apple.com/metal/tensorflow-plugin/
