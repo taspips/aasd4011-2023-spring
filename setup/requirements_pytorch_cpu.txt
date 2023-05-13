@@ -1,3 +1,4 @@
+--extra-index-url https://download.pytorch.org/whl/cpu  # required for linux since otherwise the default is the GPU version
 torch==2.0.0  # for Windows and Mac this installs the CPU-only version (no GPU)
 torchvision==0.15.1  # needed to the pytorch-tensorboard tutorial, for downloading fashion-mnist
 tensorboard==2.12.3
