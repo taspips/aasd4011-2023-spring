@@ -50,7 +50,7 @@ def identify_python_executable():
     if (executable.endswith('python')) | (executable.endswith('python.exe')):
         executable = 'python'
     elif (executable.endswith('python3')) | (executable.endswith('python3.exe')):
-        exectuable = 'python3'
+        executable = 'python3'
     else:
         raise ValueError(f"executable is {executable} and it doesn't end with neither 'python', 'python.exe', 'python3', nor 'python3.exe'. "
                          "To support this executable, update this script"
@@ -63,7 +63,7 @@ def validate_python_version():
     Check if the installed Python version is within the recommended range (3.7.x-3.11.x).
     If not, exit the script with a message.
     """
-    if (sys.version_info >= (3, 7)) | (sys.version_info <= (3, 11)):
+    if (sys.version_info >= (3, 7)) and (sys.version_info <= (3, 11)):
         print(
             f'Python version {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro} is installed. '
             '(the recommended version for this repository is 3.7.x-3.11.x)'
@@ -224,7 +224,7 @@ def main():
     processor_platform = identify_processor_platform()
 
     # Installation for Windows, Linux, and MacOS running on x86_64 architecture
-    if operating_system in ['Windows', 'Linux', 'Darwin'] and processor_platform in ['AMD64','x86_64']:
+    if operating_system in ['Windows', 'Linux', 'Darwin'] and processor_platform in ['AMD64', 'x86_64']:
         shell = identify_shell(operating_system)
         validate_python_version()
         executable = identify_python_executable()
@@ -232,11 +232,8 @@ def main():
         is_pip_installed()
         is_ensurepip_installed()
         venv_names = ['pytorch_cpu', 'tensorflow_cpu']
-        if operating_system == 'Windows':
-            venv_paths = [r'.\venv\\'+n for n in venv_names]
-        elif (operating_system == 'Linux') | (operating_system == 'Darwin'):
-            venv_paths = ['./venv/'+n for n in venv_names]
-        requirements_paths = ['./setup/requirements_' + e + '.txt' for e in venv_names]
+        venv_paths = [os.path.join('.', 'venv', n) for n in venv_names]
+        requirements_paths = [os.path.join('.', 'setup', 'requirements_' + e + '.txt') for e in venv_names]
         for venv_path, requirements_path, venv_name in zip(venv_paths, requirements_paths, venv_names):
             create_venv(venv_path, operating_system, shell, executable)
             install_packages(venv_path, requirements_path, operating_system, shell, executable)
@@ -262,8 +259,9 @@ def main():
         print(f"\n (2/2) Installation Succesful! Please run \'conda activate {venv_name}\' to activate the environment.")
 
     else:
-        raise Exception(f"Could not find a compatible operating system (OS) and CPU Architecture: the platform seems to have OS={operating_system} and CPU architecture={processor_platform}. "
-                        "This setup supports only Windows, Linux or Darwin (Mac) as an OS and x86_64 or arm64 for the CPU architecture.")
+        raise Exception(
+            f"Could not find a compatible operating system (OS) and CPU Architecture: the platform seems to have OS={operating_system} and CPU architecture={processor_platform}. \
+                This setup supports only Windows, Linux or Darwin (Mac) as an OS and x86_64 or arm64 for the CPU architecture.")
 
 
 if __name__ == '__main__':
