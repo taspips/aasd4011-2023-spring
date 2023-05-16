@@ -158,7 +158,7 @@ def main():
     processor_platform = identify_processor_platform()
 
     # Installation for Windows, Linux, and MacOS running on x86_64 architecture
-    if operating_system in ['Windows', 'Linux', 'Darwin'] and processor_platform == 'x86_64':
+    if operating_system in ['Windows', 'Linux', 'Darwin'] and processor_platform in ['AMD64','x86_64']:
         shell = identify_shell(operating_system)
         validate_python_version()
         executable = identify_python_executable()
@@ -177,7 +177,7 @@ def main():
             install_ipykernel(venv_path, venv_name, operating_system, shell, executable)
 
     # Installation for macOS running on Apple Silicon
-    elif operating_system == 'Darwin' and processor_platform == 'arm64':
+    elif operating_system == 'Darwin' and processor_platform in ['arm64', 'arm64e']:
         miniconda_url = 'https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh'
         miniconda_file_name = 'Miniconda3-latest-MacOSX-arm64.sh'
         install_miniconda(miniconda_url, miniconda_file_name)
@@ -196,7 +196,8 @@ def main():
         print(f"\n (2/2) Installation Succesful! Please run \'conda activate {venv_name}\' to activate the environment.")
 
     else:
-        raise Exception('Could not identify the OS/ CPU Architecture of the machine!')
+        raise Exception(f"Could not find a compatible operating system (OS) and CPU Architecture: the platform seems to have OS={operating_system} and CPU architecture={processor_platform}. "
+                        "This setup supports only Windows, Linux or Darwin (Mac) as an OS and x86_64 or arm64 for the CPU architecture.")
 
 
 if __name__ == '__main__':
