@@ -5,20 +5,32 @@ import sys
 
 
 def identify_operating_system():
-    # identify the core operating system
+    """
+    Identify the core operating system and print it.
+
+    :return: str - The name of the operating system (e.g., 'Windows', 'Linux', 'Darwin')
+    """
     operating_system = platform.system()
     print(f'Operating system: {operating_system}')
     return operating_system
 
 
 def identify_processor_platform():
+    """
+    Identify the processor platform.
+
+    :return: str - The processor platform (e.g., 'x86_64', 'AMD64', 'arm64' etc.)
+    """
     return platform.machine()
 
 
 def identify_shell(platform: str):
-    # identify the shell environment:
-    # e.g. bash and zsh - for Linux and Mac
-    # or cmd and powershell - for Windows
+    """
+    Identify the shell environment based on the operating system.
+
+    :param platform: str - The name of the operating system (e.g., 'Windows', 'Linux', 'Darwin')
+    :return: str - The shell environment (e.g., 'bash', 'zsh', 'cmd', 'powershell')
+    """
     if (platform == 'Linux') | (platform == 'Darwin'):
         shell = os.environ["SHELL"]
     elif platform == 'Windows':
@@ -28,7 +40,11 @@ def identify_shell(platform: str):
 
 
 def identify_python_executable():
-    # identify the filename of the Python interperater running this script.
+    """
+    Identify the filename of the Python interpreter running this script.
+
+    :return: str - The Python executable filename (e.g., 'python', 'python3', 'python.exe', 'python3.exe')
+    """
     executable = sys.executable
     print(f'The python executable file is: {executable}')
     if (executable.endswith('python')) | (executable.endswith('python.exe')):
@@ -43,7 +59,10 @@ def identify_python_executable():
 
 
 def validate_python_version():
-    # check that python version is the recommended one, i.e.: 3.7.x-3.11.x
+    """
+    Check if the installed Python version is within the recommended range (3.7.x-3.11.x).
+    If not, exit the script with a message.
+    """
     if (sys.version_info >= (3, 7)) | (sys.version_info <= (3, 11)):
         print(
             f'Python version {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro} is installed. '
@@ -58,7 +77,9 @@ def validate_python_version():
 
 
 def is_git_installed():
-    # check that Git is installed
+    """
+    Check if Git is installed. If not, raise a ValueError with instructions to install it.
+    """
     try:
         output = subprocess.run(['git', '--version'], check=True, stdout=subprocess.PIPE)
         output = output.stdout.decode('ascii').replace('\n', '')
@@ -71,7 +92,9 @@ def is_git_installed():
 
 
 def is_pip_installed():
-    # check if pip is installed
+    """
+    Check if pip is installed. If not, raise an ImportError with instructions to install it.
+    """
     try:
         import pip
         print(f'pip is installed (version: {pip.__version__})')
@@ -80,7 +103,9 @@ def is_pip_installed():
 
 
 def is_ensurepip_installed():
-    # check if ensurepip is installed
+    """
+    Check if ensurepip is installed. If not, raise an ImportError with instructions to install it.
+    """
     try:
         import ensurepip
         print(f'ensurepip is installed (version: {ensurepip.version()})')
@@ -103,7 +128,15 @@ def create_venv(venv_path: str, platform: str, shell: str, executable: str):
 
 
 def install_packages(venv_path: str, requirements_path: str, platform: str, shell: str, executable: str):
-    # install packages from requirements.txt
+    """
+    Install packages from a requirements.txt file into a virtual environment.
+
+    :param venv_path: str - The path to the virtual environment
+    :param requirements_path: str - The path to the requirements.txt file
+    :param platform: str - The name of the operating system (e.g., 'Windows', 'Linux', 'Darwin')
+    :param shell: str - The shell environment (e.g., 'bash', 'zsh', 'cmd', 'powershell')
+    :param executable: str - The Python executable filename (e.g., 'python', 'python3', 'python.exe', 'python3.exe')
+    """
     print(f'{venv_path} - Installing packages...')
     if (platform == 'Linux') | (platform == 'Darwin'):
         subprocess.run(f'{venv_path}/bin/pip install -r {requirements_path}', shell=True)
@@ -113,7 +146,15 @@ def install_packages(venv_path: str, requirements_path: str, platform: str, shel
 
 
 def install_ipykernel(venv_path: str, venv_name: str, platform: str, shell: str, executable: str):
-    # install ipykernel
+    """
+    Install ipykernel in the specified virtual environment and create a kernel with the specified name and display name.
+
+    :param venv_path: str - The path to the virtual environment
+    :param venv_name: str - The name of the virtual environment
+    :param platform: str - The name of the operating system (e.g., 'Windows', 'Linux', 'Darwin')
+    :param shell: str - The shell environment (e.g., 'bash', 'zsh', 'cmd', 'powershell')
+    :param executable: str - The Python executable filename (e.g., 'python', 'python3', 'python.exe', 'python3.exe')
+    """
     print(f'{venv_path} - Installing ipykernel...')
     if (platform == 'Linux') | (platform == 'Darwin'):
         subprocess.run(f'{venv_path}/bin/python -m ipykernel install --user --name={venv_name} --display-name={venv_name}', shell=True)
@@ -123,6 +164,13 @@ def install_ipykernel(venv_path: str, venv_name: str, platform: str, shell: str,
 
 
 def install_miniconda(miniconda_url: str, miniconda_file_name: str, miniconda_install_path: str = ""):
+    """
+    Download and install MiniConda at the specified path.
+
+    :param miniconda_url: str - The URL to download the MiniConda installer
+    :param miniconda_file_name: str - The name of the downloaded MiniConda installer file
+    :param miniconda_install_path: str - The path to install MiniConda (default is '~/miniconda')
+    """
     print('Installing MiniConda...')
     if not miniconda_install_path:
         miniconda_install_path = os.path.join(os.path.expanduser('~'), 'miniconda')
@@ -136,18 +184,36 @@ def install_miniconda(miniconda_url: str, miniconda_file_name: str, miniconda_in
 
 
 def create_miniconda_environment(venv_name: str, python_version: str):
+    """
+    Create a new Miniconda environment with the specified name and Python version.
+
+    :param venv_name: str - The name of the new Miniconda environment
+    :param python_version: str - The Python version to be installed in the new environment (e.g., '3.8')
+    """
     print(f'Creating Miniconda environment "{venv_name}" with Python {python_version}...')
     subprocess.run(f'conda create -n {venv_name} python={python_version}', shell=True, check=True)
     print(f'Miniconda environment "{venv_name}" created')
 
 
-def install_tensorflow_deps(venv_name: str):
+def install_tensorflow_deps_apple_silicon(venv_name: str):
+    """
+    Only meant for Apple Silicon (M1/M2) Macs.
+    Install required packages for Tensorflow in the specified Miniconda environment.
+
+    :param venv_name: str - The name of the Miniconda environment
+    """
     print(f'Installing required packages for Tensorflow in "{venv_name}" environment...')
     subprocess.run(f'conda activate {venv_name} && conda install -c apple tensorflow-deps', shell=True, check=True)
     print(f'tensorflow-deps installed in "{venv_name}" environment')
 
 
 def install_requirements_conda(venv_name: str, requirements_file: str):
+    """
+    Install required packages from a requirements.txt file in the specified Miniconda environment.
+
+    :param venv_name: str - The name of the Miniconda environment
+    :param requirements_file: str - The path to the requirements.txt file
+    """
     print(f'Installing required packages in {requirements_file} in "{venv_name}" environment...')
     subprocess.run(f'conda activate {venv_name} && python -m pip install -r {requirements_file}', shell=True, check=True)
     print(f'{requirements_file} installed in "{venv_name}" environment')
@@ -185,7 +251,7 @@ def main():
         venv_name = 'tensorflow_metal'
         python_version = '3.10.10'
         create_miniconda_environment(venv_name, python_version)
-        install_tensorflow_deps(venv_name)
+        install_tensorflow_deps_apple_silicon(venv_name)
         install_requirements_conda(venv_name, "setup/requirements_tensorflow_apple_silicon.txt")
         print(f"\n (1/2) Installation Succesful! Please run \'conda activate {venv_name}\' to activate the environment.")
 
