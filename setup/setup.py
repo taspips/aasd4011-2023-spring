@@ -29,7 +29,7 @@ def identify_shell(platform: str):
     :param platform: str - The name of the operating system (e.g., 'Windows', 'Linux', 'Darwin')
     :return: str - The shell environment (e.g., 'bash', 'zsh', 'cmd', 'powershell')
     """
-    if (platform == 'Linux') | (platform == 'Darwin'):
+    if (platform == 'Linux') or (platform == 'Darwin'):
         shell = os.environ["SHELL"]
     elif platform == 'Windows':
         shell = os.environ["COMSPEC"]
@@ -273,22 +273,30 @@ def configure_shell_config_file(shell: str, miniconda_install_path: str = ""):
         print(f'{shell_config_file} already contains the Miniconda configuration')
 
 
+def identify_rosetta(operating_system: str, processor_platform: str):
+    if operating_system == 'Darwin':
+        if processor_platform == 'x86_64':
+            try:
+                proc_translated = int(os.popen("sysctl -in sysctl.proc_translated").read().strip())
+                return proc_translated == 1
+            except (ValueError, OSError):
+                pass
+    return False
+
+
 def main():
     operating_system = identify_operating_system()
     processor_platform = identify_processor_platform()
     shell = identify_shell(operating_system)
+    is_rosetta = identify_rosetta(operating_system, processor_platform)
 
     print(f"\nOperating System (OS) detected: {operating_system}")
-    print(f"CPU Architecture detected (Intel- x86_64, Apple): {processor_platform}")
+    print(f"CPU Architecture detected: {processor_platform}")
     print(f"Shell detected: {shell}\n")
-
-    ans = input("Is the above mentioned info correct? (y/n)")
-    if ans.lower() != 'y':
-        print("Exiting...")
-        sys.exit()
+    print(f"Rosetta detected: {is_rosetta}\n")
 
     # Installation for Windows, Linux, and MacOS running on x86_64 architecture
-    if operating_system in ['Windows', 'Linux', 'Darwin'] and processor_platform in ['AMD64', 'x86_64']:
+    if operating_system in ['Windows', 'Linux', 'Darwin'] and processor_platform in ['AMD64', 'x86_64'] and not is_rosetta:
         validate_python_version()
         executable = identify_python_executable()
         is_git_installed()
@@ -303,7 +311,7 @@ def main():
             install_ipykernel(venv_path, venv_name, operating_system, shell, executable)
 
     # Installation for macOS running on Apple Silicon
-    elif operating_system == 'Darwin' and processor_platform in ['arm64', 'arm64e']:
+    elif operating_system == 'Darwin' and (processor_platform in ['arm64', 'arm64e'] or is_rosetta):
         miniconda_url = 'https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh'
         miniconda_file_name = 'Miniconda3-latest-MacOSX-arm64.sh'
         install_miniconda(miniconda_url, miniconda_file_name)
