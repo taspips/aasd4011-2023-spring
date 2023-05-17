@@ -10,9 +10,7 @@ def identify_operating_system():
 
     :return: str - The name of the operating system (e.g., 'Windows', 'Linux', 'Darwin')
     """
-    operating_system = platform.system()
-    print(f'Operating system: {operating_system}')
-    return operating_system
+    return platform.system()
 
 
 def identify_processor_platform():
@@ -183,49 +181,114 @@ def install_miniconda(miniconda_url: str, miniconda_file_name: str, miniconda_in
     print('MiniConda installed successfully')
 
 
-def create_miniconda_environment(venv_name: str, python_version: str):
+def create_venv_miniconda(venv_name: str, python_version: str, miniconda_install_path: str = ""):
     """
     Create a new Miniconda environment with the specified name and Python version.
 
     :param venv_name: str - The name of the new Miniconda environment
     :param python_version: str - The Python version to be installed in the new environment (e.g., '3.8')
+    :param miniconda_install_path: str - Path where miniconda is installed. (default is '~/miniconda')
     """
+    if not miniconda_install_path:
+        miniconda_install_path = os.path.join(os.path.expanduser('~'), 'miniconda')
+    miniconda_base_path = os.path.join(miniconda_install_path, "bin", "activate")
     print(f'Creating Miniconda environment "{venv_name}" with Python {python_version}...')
-    subprocess.run(f'conda create -n {venv_name} python={python_version}', shell=True, check=True)
+    subprocess.run(f'source {miniconda_base_path} && conda create -n {venv_name} python={python_version} --yes',
+                   shell=True, check=True)
     print(f'Miniconda environment "{venv_name}" created')
 
 
-def install_tensorflow_deps_apple_silicon(venv_name: str):
+def install_tensorflow_deps_miniconda(venv_name: str, miniconda_install_path: str = ""):
     """
     Only meant for Apple Silicon (M1/M2) Macs.
     Install required packages for Tensorflow in the specified Miniconda environment.
 
     :param venv_name: str - The name of the Miniconda environment
+    :param miniconda_install_path: str - Path where miniconda is installed. (default is '~/miniconda')
     """
+    if not miniconda_install_path:
+        miniconda_install_path = os.path.join(os.path.expanduser('~'), 'miniconda')
+    miniconda_base_path = os.path.join(miniconda_install_path, "bin", "activate")
     print(f'Installing required packages for Tensorflow in "{venv_name}" environment...')
-    subprocess.run(f'conda activate {venv_name} && conda install -c apple tensorflow-deps', shell=True, check=True)
+    subprocess.run(
+        f'source {miniconda_base_path} && conda activate {venv_name} && conda install -c apple tensorflow-deps --yes', shell=True, check=True)
     print(f'tensorflow-deps installed in "{venv_name}" environment')
 
 
-def install_requirements_conda(venv_name: str, requirements_file: str):
+def install_requirements_miniconda(venv_name: str, requirements_file: str, miniconda_install_path: str = ""):
     """
     Install required packages from a requirements.txt file in the specified Miniconda environment.
 
     :param venv_name: str - The name of the Miniconda environment
     :param requirements_file: str - The path to the requirements.txt file
+    :param miniconda_install_path: str - Path where miniconda is installed. (default is '~/miniconda')
     """
+    if not miniconda_install_path:
+        miniconda_install_path = os.path.join(os.path.expanduser('~'), 'miniconda')
+    miniconda_base_path = os.path.join(miniconda_install_path, "bin", "activate")
     print(f'Installing required packages in {requirements_file} in "{venv_name}" environment...')
-    subprocess.run(f'conda activate {venv_name} && python -m pip install -r {requirements_file}', shell=True, check=True)
+    subprocess.run(
+        f'source {miniconda_base_path} && conda activate {venv_name} && python -m pip install -r {requirements_file}', shell=True, check=True)
     print(f'{requirements_file} installed in "{venv_name}" environment')
+
+
+def configure_shell_config_file(shell: str, miniconda_install_path: str = ""):
+    """
+    Set the miniconda base environment to auto activate on new shell initialization.
+
+    :param shell: str - The name of shell
+    :param miniconda_install_path: str - Path where miniconda is installed. (default is '~/miniconda')
+    """
+    if 'zsh' in shell:
+        shell_config_file = os.path.expanduser('~/.zshrc')
+    elif 'bash' in shell:
+        if os.path.exists(os.path.expanduser('~/.bash_profile')):
+            shell_config_file = os.path.expanduser('~/.bash_profile')
+        else:
+            shell_config_file = os.path.expanduser('~/.bashrc')
+    else:
+        raise Exception(f"Could not determine shell_config_file for shell {shell}")
+
+    if not miniconda_install_path:
+        miniconda_install_path = os.path.join(os.path.expanduser('~'), 'miniconda')
+    miniconda_base_path = os.path.join(miniconda_install_path, "bin", "activate")
+
+    lines_to_add = [
+        '# Miniconda base environment',
+        f'export PATH="{miniconda_base_path}:$PATH"',
+        f'source {miniconda_base_path}'
+    ]
+
+    if os.path.isfile(shell_config_file):
+        with open(shell_config_file, 'r') as f:
+            existing_lines = f.readlines()
+    else:
+        existing_lines = []
+
+    if not set(lines_to_add).issubset([x.replace("\n", "") for x in existing_lines]):
+        with open(shell_config_file, 'a') as f:
+            f.write('\n'.join(lines_to_add))
+            print(f'Updated {shell_config_file}')
+    else:
+        print(f'{shell_config_file} already contains the Miniconda configuration')
 
 
 def main():
     operating_system = identify_operating_system()
     processor_platform = identify_processor_platform()
+    shell = identify_shell(operating_system)
+
+    print(f"\nOperating System (OS) detected: {operating_system}")
+    print(f"CPU Architecture detected (Intel- x86_64, Apple): {processor_platform}")
+    print(f"Shell detected: {shell}\n")
+
+    ans = input("Is the above mentioned info correct? (y/n)")
+    if ans.lower() != 'y':
+        print("Exiting...")
+        sys.exit()
 
     # Installation for Windows, Linux, and MacOS running on x86_64 architecture
     if operating_system in ['Windows', 'Linux', 'Darwin'] and processor_platform in ['AMD64', 'x86_64']:
-        shell = identify_shell(operating_system)
         validate_python_version()
         executable = identify_python_executable()
         is_git_installed()
@@ -247,16 +310,18 @@ def main():
 
         venv_name = 'tensorflow_metal'
         python_version = '3.10.10'
-        create_miniconda_environment(venv_name, python_version)
-        install_tensorflow_deps_apple_silicon(venv_name)
-        install_requirements_conda(venv_name, "setup/requirements_tensorflow_apple_silicon.txt")
+        create_venv_miniconda(venv_name, python_version)
+        install_tensorflow_deps_miniconda(venv_name)
+        install_requirements_miniconda(venv_name, "setup/requirements_tensorflow_apple_silicon.txt")
         print(f"\n (1/2) Installation Succesful! Please run \'conda activate {venv_name}\' to activate the environment.")
 
-        venv_name = 'pytorch_cpu'
+        venv_name = 'pytorch_metal'
         python_version = '3.10.10'
-        create_miniconda_environment(venv_name, python_version)
-        install_requirements_conda(venv_name, "setup/requirements_pytorch_cpu.txt")
+        create_venv_miniconda(venv_name, python_version)
+        install_requirements_miniconda(venv_name, "setup/requirements_pytorch_cpu.txt")
         print(f"\n (2/2) Installation Succesful! Please run \'conda activate {venv_name}\' to activate the environment.")
+
+        configure_shell_config_file(shell)
 
     else:
         raise Exception(
