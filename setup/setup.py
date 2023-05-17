@@ -274,6 +274,12 @@ def configure_shell_config_file(shell: str, miniconda_install_path: str = ""):
 
 
 def identify_rosetta(operating_system: str, processor_platform: str):
+    """
+    Identify if Rosetta is installed and running on Apple Silicon (M1/M2) Macs.
+
+    :param operating_system: str - The name of the operating system
+    :param processor_platform: str - The name of the processor architecture
+    """
     if operating_system == 'Darwin':
         if processor_platform == 'x86_64':
             try:
@@ -292,7 +298,7 @@ def main():
 
     print(f"\nOperating System (OS) detected: {operating_system}")
     print(f"CPU Architecture detected: {processor_platform}")
-    print(f"Shell detected: {shell}\n")
+    print(f"Shell detected: {shell}")
     print(f"Rosetta detected: {is_rosetta}\n")
 
     # Installation for Windows, Linux, and MacOS running on x86_64 architecture
@@ -330,6 +336,7 @@ def main():
         print(f"\n (2/2) Installation Succesful! Please run \'conda activate {venv_name}\' to activate the environment.")
 
         configure_shell_config_file(shell)
+        print(f"\Please restart your shell window for changes to take affect.")
 
     else:
         raise Exception(
